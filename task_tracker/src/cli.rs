@@ -16,6 +16,7 @@ pub enum Commands {
     Delete { id: u64 },
     Update { id: u64, description: String },
     List { status: Option<TaskStatus> },
+    Mark { id: u64, status: TaskStatus },
 }
 
 pub struct Cli {
@@ -43,6 +44,7 @@ impl Cli {
             Commands::Update { id, description } => self.update_task(id, description)?,
             Commands::Delete { id } => self.delete_task(id)?,
             Commands::List { status } => self.list_tasks(status),
+            Commands::Mark { id, status } => self.mark_task_status(id, status)?,
         }
 
         Ok(())
@@ -60,6 +62,20 @@ impl Cli {
         self.tasks.push(new_task);
         self.save_tasks()?;
         eprintln!("Task Added Successfully (ID: {})", max_id);
+        Ok(())
+    }
+
+    fn mark_task_status(
+        &mut self,
+        id: u64,
+        status: TaskStatus,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        if let Some(task) = self.tasks.iter_mut().find(|task| task.id == id) {
+            task.status = status.clone();
+            task.updated_at = Utc::now();
+        }
+        self.save_tasks()?;
+        eprintln!("Task (ID: {}) Maked as {}", id, status);
         Ok(())
     }
 

@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -17,6 +19,17 @@ pub enum TaskStatus {
     InProgress,
     Done,
     Skip,
+}
+
+impl Display for TaskStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TaskStatus::Todo => write!(f, "Todo"),
+            TaskStatus::InProgress => write!(f, "In Progress"),
+            TaskStatus::Done => write!(f, "Done"),
+            TaskStatus::Skip => write!(f, "Skip"),
+        }
+    }
 }
 
 pub struct TaskManager {
