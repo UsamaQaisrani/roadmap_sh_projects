@@ -51,9 +51,9 @@ impl Cli {
     }
 
     fn add_task(&mut self, description: String) -> Result<(), Box<dyn std::error::Error>> {
-        let max_id = self.get_max_id();
+        let new_id = self.get_max_id() + 1;
         let new_task = Task {
-            id: max_id + 1,
+            id: new_id,
             description,
             created_at: Utc::now(),
             updated_at: Utc::now(),
@@ -61,7 +61,7 @@ impl Cli {
         };
         self.tasks.push(new_task);
         self.save_tasks()?;
-        eprintln!("Task Added Successfully (ID: {})", max_id);
+        eprintln!("Task Added Successfully (ID: {})", new_id);
         Ok(())
     }
 
@@ -70,12 +70,16 @@ impl Cli {
         id: u64,
         status: TaskStatus,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        if let Some(task) = self.tasks.iter_mut().find(|task| task.id == id) {
-            task.status = status.clone();
-            task.updated_at = Utc::now();
-        }
+        let task = self
+            .tasks
+            .iter_mut()
+            .find(|task| task.id == id)
+            .ok_or("Task not found")?;
+
+        task.status = status.clone();
+        task.updated_at = Utc::now();
         self.save_tasks()?;
-        eprintln!("Task (ID: {}) Maked as {}", id, status);
+        eprintln!("Task (ID: {}) Marked as {}", id, status);
         Ok(())
     }
 
@@ -84,10 +88,13 @@ impl Cli {
         id: u64,
         description: String,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        if let Some(task) = self.tasks.iter_mut().find(|task| task.id == id) {
-            task.description = description;
-            task.updated_at = Utc::now();
-        }
+        let task = self
+            .tasks
+            .iter_mut()
+            .find(|task| task.id == id)
+            .ok_or("Task not found")?;
+        task.description = description;
+        task.updated_at = Utc::now();
         self.save_tasks()?;
         eprintln!("Task Updated Successfully (ID: {})", id);
         Ok(())
@@ -118,7 +125,7 @@ impl Cli {
     }
 
     fn get_max_id(&self) -> u64 {
-        self.tasks.iter().map(|task| task.id).max().unwrap_or(1_u64)
+        self.tasks.iter().map(|task| task.id).max().unwrap_or(0)
     }
 
     fn load_existing_tasks() -> Result<Vec<Task>, Box<dyn std::error::Error>> {
