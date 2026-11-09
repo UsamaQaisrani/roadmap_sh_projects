@@ -10,7 +10,7 @@ pub struct Task {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, clap::ValueEnum, PartialEq)]
 pub enum TaskStatus {
     #[default]
     Todo,

@@ -15,7 +15,7 @@ pub enum Commands {
     Add { description: String },
     Delete { id: u64 },
     Update { id: u64, description: String },
-    List,
+    List { status: Option<TaskStatus> },
 }
 
 pub struct Cli {
@@ -42,9 +42,7 @@ impl Cli {
 
             Commands::Update { id, description } => self.update_task(id, description)?,
             Commands::Delete { id } => self.delete_task(id)?,
-            Commands::List => {
-                println!("Listing all tasks")
-            }
+            Commands::List { status } => self.list_tasks(status),
         }
 
         Ok(())
@@ -53,7 +51,7 @@ impl Cli {
     fn add_task(&mut self, description: String) -> Result<(), Box<dyn std::error::Error>> {
         let max_id = self.get_max_id();
         let new_task = Task {
-            id: max_id,
+            id: max_id + 1,
             description,
             created_at: Utc::now(),
             updated_at: Utc::now(),
@@ -90,6 +88,17 @@ impl Cli {
         self.save_tasks()?;
         eprintln!("Task Deleted Successfully (ID: {})", id);
         Ok(())
+    }
+
+    fn list_tasks(&self, status: Option<TaskStatus>) {
+        let filtered_tasks = self
+            .tasks
+            .iter()
+            .filter(|task| status.as_ref().is_none_or(|status| task.status == *status));
+
+        for task in filtered_tasks {
+            println!("{}- {}", task.id, task.description);
+        }
     }
 
     fn get_max_id(&self) -> u64 {
