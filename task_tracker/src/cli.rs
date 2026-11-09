@@ -41,10 +41,7 @@ impl Cli {
             Commands::Add { description } => self.add_task(description)?,
 
             Commands::Update { id, description } => self.update_task(id, description)?,
-            Commands::Delete { id } => {
-                println!("Deleting task: {}", id);
-            }
-
+            Commands::Delete { id } => self.delete_task(id)?,
             Commands::List => {
                 println!("Listing all tasks")
             }
@@ -79,6 +76,19 @@ impl Cli {
         }
         self.save_tasks()?;
         eprintln!("Task Updated Successfully (ID: {})", id);
+        Ok(())
+    }
+
+    fn delete_task(&mut self, id: u64) -> Result<(), Box<dyn std::error::Error>> {
+        let original_len = self.tasks.len();
+        self.tasks.retain(|task| task.id != id);
+
+        if original_len == self.tasks.len() {
+            return Err("Task not found".into());
+        }
+
+        self.save_tasks()?;
+        eprintln!("Task Deleted Successfully (ID: {})", id);
         Ok(())
     }
 
