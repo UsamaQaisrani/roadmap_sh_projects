@@ -40,12 +40,7 @@ impl Cli {
         match args.command {
             Commands::Add { description } => self.add_task(description)?,
 
-            Commands::Update { id, description } => {
-                println!(
-                    "Updating description for task with id: {}, and new description: {}",
-                    id, description
-                );
-            }
+            Commands::Update { id, description } => self.update_task(id, description)?,
             Commands::Delete { id } => {
                 println!("Deleting task: {}", id);
             }
@@ -69,6 +64,21 @@ impl Cli {
         };
         self.tasks.push(new_task);
         self.save_tasks()?;
+        eprintln!("Task Added Successfully (ID: {})", max_id);
+        Ok(())
+    }
+
+    fn update_task(
+        &mut self,
+        id: u64,
+        description: String,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        if let Some(task) = self.tasks.iter_mut().find(|task| task.id == id) {
+            task.description = description;
+            task.updated_at = Utc::now();
+        }
+        self.save_tasks()?;
+        eprintln!("Task Updated Successfully (ID: {})", id);
         Ok(())
     }
 
